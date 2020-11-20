@@ -11,13 +11,14 @@ public class WebPing {
       	return;
       }	
   
-   String httpServerHost = args[0];
-    int httpServerPort = Integer.parseInt(args[1]);
-     httpServerHost = args[0];
+      String httpServerHost = args[0];
+      int httpServerPort = Integer.parseInt(args[1]);
+      httpServerHost = args[0];
       httpServerPort = Integer.parseInt(args[1]);
 
     try {
-      InetAddress addr;      Socket sock = new Socket(httpServerHost, httpServerPort);
+      InetAddress addr;      
+      Socket sock = new Socket(httpServerHost, httpServerPort);
       addr = sock.getInetAddress();
       System.out.println("Connected to " + addr);
       sock.close();
