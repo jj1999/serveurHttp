@@ -70,14 +70,16 @@ public class WebServer {
         
         while (str != null && !str.equals("")) {
         	
+        	
         	str = in.readLine();
-        	System.out.println(str);
+        	System.out.println("donnees recues" + str);
         	
-        	String[] tmp = str.split(" ");
-        	String requete = tmp[0];
-        	String path = tmp[1];
+
         	
-	        if (requete.equals("GET")) {
+	        if (str.startsWith("GET")) {
+	        	String[] tmp = str.split(" ");
+	        	String requete = tmp[0];
+	        	String path = tmp[1];
 	        	out.println("Get method");
 		        responseGet(path, socketOutputStream);
 	        }
@@ -104,7 +106,7 @@ public class WebServer {
   	}
   
   	public void responseGet(String path, OutputStream socketOutputStream) {
-  		
+  		path = "/"+System.getProperty("user.dir")+"/../../ressources"+ path;
   		PrintWriter out = new PrintWriter(socketOutputStream);
     	File file = new File(path.substring(1));
     	
