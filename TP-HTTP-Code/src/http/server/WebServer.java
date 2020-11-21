@@ -192,11 +192,12 @@ public class WebServer {
             out.println("Content-Length : "+ file.length()+ " b");
     	}
     	else {
-    		file.delete();
+
         	// Send the headers
             out.println("HTTP/1.0 202 ACCEPTED"); //pareil que pour get
             out.println("Server: Bot");
             out.println("Content-Length : "+ file.length()+ " b");
+    		file.delete();
     	}
 
         
