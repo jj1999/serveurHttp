@@ -82,6 +82,20 @@ public class WebServer {
 	        	String path = tmp[1];
 	        	out.println("Get method");
 		        responseGet(path, socketOutputStream);
+	        } 
+	        else if (str.startsWith("HEAD")) {
+	        	String[] tmp = str.split(" ");
+	        	String requete = tmp[0];
+	        	String path = tmp[1];
+	        	out.println("Get method");
+		        responseHead(path, socketOutputStream);
+	        }
+	        else if (str.startsWith("DELETE")) {
+	        	String[] tmp = str.split(" ");
+	        	String requete = tmp[0];
+	        	String path = tmp[1];
+	        	out.println("Get method");
+		        responseDelete(path, socketOutputStream);
 	        }
 	        remote.close();	
         }
@@ -111,8 +125,8 @@ public class WebServer {
     	File file = new File(path.substring(1));
     	
     	// Send the headers
-        out.println("HTTP/1.0 200 OK");
-        out.println("Content-Type: text/html");
+        out.println("HTTP/1.0 200 OK"); // à modifier (on renvoie le code 200 (succès) que la ressource existe ou pas ..)
+        out.println("Content-Type: text/html"); // a modifier (au pire on supprime mais si la ressource n'est ni du texte ni du html ...)
         out.println("Server: Bot");
         FileReader fr;
 		try {
@@ -128,9 +142,8 @@ public class WebServer {
 	    		out.write("\n");
 	    	}
 
-	        out.println("");
-	        // Send the HTML page
-	        out.println("<H1>Welcome to the Ultra Mini-WebServer</H2>");
+
+
 	        reader.close();
 	        out.flush();
 		} catch (IOException e) {
@@ -139,4 +152,55 @@ public class WebServer {
 		}
     	
   	}
+  	
+  	public void responseHead(String path, OutputStream socketOutputStream) {
+  		path = "/"+System.getProperty("user.dir")+"/../../ressources"+ path;
+  		PrintWriter out = new PrintWriter(socketOutputStream);
+    	File file = new File(path.substring(1));
+    	if(file.exists()) {
+        	// Send the headers
+            out.println("HTTP/1.0 200 OK"); //pareil que pour get ...
+            out.println("Content-Type: text/html");
+            out.println("Server: Bot");
+            out.println("Content-Length : "+ file.length()+ " b");   		
+    	}
+    	else {
+        	// Send the headers
+            out.println("HTTP/1.0 404 NOT FOUND"); //pareil que pour get ...
+            out.println("Content-Type: text/html");
+            out.println("Server: Bot");
+            out.println("Content-Length : "+ file.length()+ " b");  
+    	}
+
+    	
+  	}
+  	
+  	public void responseDelete(String path, OutputStream socketOutputStream) {
+  		path = "/"+System.getProperty("user.dir")+"/../../ressources"+ path;
+  		PrintWriter out = new PrintWriter(socketOutputStream);
+    	File file = new File(path.substring(1));
+    	if(!file.exists() && file.canWrite()) {
+        	// Send the headers
+            out.println("HTTP/1.0 404 NOT FOUND "); //pareil que pour get
+            out.println("Server: Bot");
+            out.println("Content-Length : "+ file.length()+ " b");
+    	}
+    	else if(!file.canWrite()) {
+        	// Send the headers
+            out.println("HTTP/1.0 403 FORBIDDEN "); //pareil que pour get
+            out.println("Server: Bot");
+            out.println("Content-Length : "+ file.length()+ " b");
+    	}
+    	else {
+    		file.delete();
+        	// Send the headers
+            out.println("HTTP/1.0 202 ACCEPTED"); //pareil que pour get
+            out.println("Server: Bot");
+            out.println("Content-Length : "+ file.length()+ " b");
+    	}
+
+        
+  	}
+  	
+  	
   }
