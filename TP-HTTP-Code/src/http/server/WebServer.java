@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -17,6 +18,7 @@ import java.net.Socket;
 import java.net.URL;
 import java.net.http.HttpClient;
 import java.net.http.HttpResponse;
+import java.util.ArrayList;
 
 
 /**
@@ -87,16 +89,23 @@ public class WebServer {
 	        	String[] tmp = str.split(" ");
 	        	String requete = tmp[0];
 	        	String path = tmp[1];
-	        	out.println("Get method");
+	        	out.println("Head method");
 		        responseHead(path, socketOutputStream);
 	        }
 	        else if (str.startsWith("DELETE")) {
 	        	String[] tmp = str.split(" ");
 	        	String requete = tmp[0];
 	        	String path = tmp[1];
-	        	out.println("Get method");
+	        	out.println("Delete method");
 		        responseDelete(path, socketOutputStream);
 	        }
+//	        else if(str.startsWith("PUT")) {
+//	        	String[] tmp = str.split(" ");
+//	        	String requete = tmp[0];
+//	        	String path = tmp[1];
+//	        	out.println("Put method");
+//		        responsePut(path, socketOutputStream, in);
+//	        }
 	        remote.close();	
         }
 
@@ -125,14 +134,19 @@ public class WebServer {
     	File file = new File(path.substring(1));
     	
     	// Send the headers
-        out.println("HTTP/1.0 200 OK"); // à modifier (on renvoie le code 200 (succès) que la ressource existe ou pas ..)
-        out.println("Content-Type: text/html"); // a modifier (au pire on supprime mais si la ressource n'est ni du texte ni du html ...)
-        out.println("Server: Bot");
+
         FileReader fr;
 		try {
 			fr = new FileReader(file);
 			BufferedReader reader = new BufferedReader(fr);
 	    	String ligne;
+	        
+	    	
+	    	
+	    	out.println("HTTP/1.0 200 OK"); // à modifier (on renvoie le code 200 (succès) que la ressource existe ou pas ..)
+	        out.println("Content-Type: text/html"); // a modifier (au pire on supprime mais si la ressource n'est ni du texte ni du html ...)
+	        out.println("Server: Bot");
+	        
 	    	while(true) {
 	    		ligne = reader.readLine();
 	    		if(ligne == null) {
@@ -141,13 +155,16 @@ public class WebServer {
 	    		out.write(ligne);
 	    		out.write("\n");
 	    	}
-
+	    	
 
 
 	        reader.close();
 	        out.flush();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
+			
+	        out.println("HTTP/1.0 404 NOT FOUND"); // à modifier (on renvoie le code 200 (succès) que la ressource existe ou pas ..)
+	        out.println("Content-Type: text/html"); // a modifier (au pire on supprime mais si la ressource n'est ni du texte ni du html ...)
+	        out.println("Server: Bot");
 			e.printStackTrace();
 		}
     	
@@ -157,20 +174,22 @@ public class WebServer {
   		path = "/"+System.getProperty("user.dir")+"/../../ressources"+ path;
   		PrintWriter out = new PrintWriter(socketOutputStream);
     	File file = new File(path.substring(1));
+
     	if(file.exists()) {
         	// Send the headers
-            out.println("HTTP/1.0 200 OK"); //pareil que pour get ...
-            out.println("Content-Type: text/html");
-            out.println("Server: Bot");
-            out.println("Content-Length : "+ file.length()+ " b");   		
-    	}
-    	else {
-        	// Send the headers
-            out.println("HTTP/1.0 404 NOT FOUND"); //pareil que pour get ...
+            out.println("HTTP/1.0 200 OK"); 
             out.println("Content-Type: text/html");
             out.println("Server: Bot");
             out.println("Content-Length : "+ file.length()+ " b");  
     	}
+    	else {
+        	// Send the headers
+            out.println("HTTP/1.0 404 NOT FOUND"); 
+            out.println("Content-Type: text/html");
+            out.println("Server: Bot");
+
+    	}
+    	out.flush();
 
     	
   	}
@@ -181,27 +200,93 @@ public class WebServer {
     	File file = new File(path.substring(1));
     	if(!file.exists() && file.canWrite()) {
         	// Send the headers
-            out.println("HTTP/1.0 404 NOT FOUND "); //pareil que pour get
+            out.println("HTTP/1.0 404 NOT FOUND "); 
             out.println("Server: Bot");
-            out.println("Content-Length : "+ file.length()+ " b");
     	}
     	else if(!file.canWrite()) {
         	// Send the headers
-            out.println("HTTP/1.0 403 FORBIDDEN "); //pareil que pour get
+            out.println("HTTP/1.0 403 FORBIDDEN ");
             out.println("Server: Bot");
-            out.println("Content-Length : "+ file.length()+ " b");
+
     	}
     	else {
-
         	// Send the headers
-            out.println("HTTP/1.0 202 ACCEPTED"); //pareil que pour get
+            out.println("HTTP/1.0 202 ACCEPTED"); 
             out.println("Server: Bot");
-            out.println("Content-Length : "+ file.length()+ " b");
+            out.println("Content-Length: "+ file.length()+ " b");
     		file.delete();
+    	}   
+    	out.flush();
+  	}
+  	
+  	public void responsePut(String path, OutputStream socketOutputStream, BufferedReader in) {
+  		path = "/"+System.getProperty("user.dir")+"/../../ressources"+ path;
+  		PrintWriter out = new PrintWriter(socketOutputStream);
+    	File file = new File(path.substring(1));
+    	
+    	String line = new String("");
+    	while (!line.contains("Content-length")) {
+    		try {
+				line = in.readLine();
+				System.out.println("header: " + line);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
     	}
+    	
+		String[] ligneTailleRequete = line.split(": ");
+		int tailleRequete = Integer.parseInt(ligneTailleRequete[1]);
+		System.out.println(tailleRequete);
+    	ArrayList<String> Contenu = new ArrayList<String>();
+    	Integer compteurTaille = 0;
+    	while(compteurTaille < tailleRequete) {
+    		try {
+    			String ligneContenu = in.readLine();
+    			Contenu.add(ligneContenu);
+    			System.out.println("contenu: " +ligneContenu);
+    			compteurTaille += ligneContenu.length();
+			} catch (IOException e) {
+				e.printStackTrace();
+				break;
+			}
+    		
+    	}
+        
+    	FileWriter myWriter;
+		try {
+			
+			myWriter = new FileWriter(path);
+	    	for(String ligne : Contenu) {
+	    		
+	            myWriter.write(ligne);
+	    	}
+	        myWriter.close();
+	        
+	        
+        	// Send the headers
+            out.println("HTTP/1.0 202 ACCEPTED"); 
+            out.println("Server: Bot");
+            out.println("File-location: "+ path);
+	        
+	        
+		} catch (IOException e) {
+			e.printStackTrace();
+			
+            out.println("HTTP/1.0 403 FORBIDDEN"); 
+            out.println("Server: Bot");
+		}
+
+		out.flush();
+    	
+    	
+    	
 
         
   	}
   	
-  	
   }
+
+
+
+
+
