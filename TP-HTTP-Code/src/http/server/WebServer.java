@@ -129,7 +129,8 @@ public class WebServer {
   	}
   
   	public void responseGet(String path, OutputStream socketOutputStream) {
-  		path = "/"+System.getProperty("user.dir")+"/../../ressources"+ path;
+  		
+  		path = "/"+System.getProperty("user.dir")+"/src/ressources"+ path;
   		PrintWriter out = new PrintWriter(socketOutputStream);
     	File file = new File(path.substring(1));
     	
@@ -169,7 +170,7 @@ public class WebServer {
   	}
   	
   	public void responseHead(String path, OutputStream socketOutputStream) {
-  		path = "/"+System.getProperty("user.dir")+"/../../ressources"+ path;
+  		path = "/"+System.getProperty("user.dir")+"/src/ressources"+ path;
   		PrintWriter out = new PrintWriter(socketOutputStream);
     	File file = new File(path.substring(1));
 
@@ -193,7 +194,7 @@ public class WebServer {
   	}
   	
   	public void responseDelete(String path, OutputStream socketOutputStream) {
-  		path = "/"+System.getProperty("user.dir")+"/../../ressources"+ path;
+  		path = "/"+System.getProperty("user.dir")+"/src/ressources"+ path;
   		PrintWriter out = new PrintWriter(socketOutputStream);
     	File file = new File(path.substring(1));
     	if(!file.exists() && file.canWrite()) {
@@ -218,7 +219,7 @@ public class WebServer {
   	}
   	
   	public void responsePut(String path, OutputStream socketOutputStream, BufferedReader in) {
-  		path = "/"+System.getProperty("user.dir")+"/../../ressources"+ path;
+  		path = "/"+System.getProperty("user.dir")+"/src/ressources"+ path;
   		PrintWriter out = new PrintWriter(socketOutputStream);
     	File file = new File(path.substring(1));
     	
