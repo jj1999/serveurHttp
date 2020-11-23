@@ -141,8 +141,6 @@ public class WebServer {
 			BufferedReader reader = new BufferedReader(fr);
 	    	String ligne;
 	        
-	    	
-	    	
 	    	out.println("HTTP/1.0 200 OK"); // à modifier (on renvoie le code 200 (succès) que la ressource existe ou pas ..)
 	        out.println("Content-Type: text/html"); // a modifier (au pire on supprime mais si la ressource n'est ni du texte ni du html ...)
 	        out.println("Server: Bot");
