@@ -141,17 +141,27 @@ public class WebServer {
   		PrintWriter out = new PrintWriter(socketOutputStream);
     	File file = new File(path.substring(1));
     	
+    	
+    	
     	// Send the headers
     	if(!file.exists()) {
 	        out.println("HTTP/1.0 404 NOT FOUND"); 
 	        out.println("Server: Bot");
     	}
+    	else if(!file.canRead()) {
+	        out.println("HTTP/1.0 403 PERMISSION DENIED"); 
+	        out.println("Server: Bot");
+    	}
     	else {
-			try {
+    		
+    		if(path.endsWith(".py")) {
+    			System.out.println("execution en cours");
+    		}else {
 
+			try {
+				
 				int longueur = (int) file.length();
 		        out.println("HTTP/1.0 200 OK");
-		        //out.println("Content-Type: image/png");
 		        out.println("Content-Length: " +longueur);
 		    	out.println("Server: Bot");
 		    	out.println("");
@@ -182,6 +192,7 @@ public class WebServer {
 	
 				e.printStackTrace();
 			}
+    		}
 		}
     	
   	}
