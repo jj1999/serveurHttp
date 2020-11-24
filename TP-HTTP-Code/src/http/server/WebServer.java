@@ -106,6 +106,13 @@ public class WebServer {
 	        	out.println("Put method");
 		        responsePut(path, socketOutputStream, in);
 	        }
+	        else if (str.startsWith("POST")) {
+	        	String[] tmp = str.split(" ");
+	        	String requete = tmp[0];
+	        	String path = tmp[1];
+	        	out.println("Post method");
+		        responsePost(path, socketOutputStream, in);
+	        }
 	        remote.close();	
         }
 
@@ -142,9 +149,10 @@ public class WebServer {
 			BufferedReader reader = new BufferedReader(fr);
 	    	String ligne;
 	        
-	    	out.println("HTTP/1.0 200 OK"); // à modifier (on renvoie le code 200 (succès) que la ressource existe ou pas ..)
-	        out.println("Content-Type: text/html"); // a modifier (au pire on supprime mais si la ressource n'est ni du texte ni du html ...)
-	        out.println("Server: Bot");
+
+	        out.println("HTTP/1.0 200 OK");
+	    	out.println("Server: Bot");
+
 	        
 	    	while(true) {
 	    		ligne = reader.readLine();
@@ -288,6 +296,73 @@ public class WebServer {
     	
 
         
+  	}
+  	
+  	public void responsePost(String path, OutputStream socketOutputStream, BufferedReader in) {
+  		path = "/"+System.getProperty("user.dir")+"/../../ressources"+ path;
+  		PrintStream out = new PrintStream(socketOutputStream);
+  		
+  		try {
+			
+			String ligne = "pain";
+			int viennoise = 0;
+			
+			while(ligne != null) {
+				
+				ligne = in.readLine();
+	    		System.out.println(ligne);
+	    		
+	    		if(ligne.contains("Content-Length")) {
+	    			String[] ligneTailleRequete = ligne.split(": ");
+	    			viennoise = Integer.parseInt(ligneTailleRequete[1]);
+	    		}else if (!ligne.contains(": ") && viennoise!=0) {
+	    			System.out.println("arret");
+	    			break;
+	    		}
+	    		
+	    	}
+			int i = viennoise;
+			
+			
+			FileWriter myWriter;
+			try {
+				
+				myWriter = new FileWriter(path);
+				while( i>0 ) {
+					
+					System.out.println(i);
+					ligne = in.readLine();
+					myWriter.write(ligne);
+					System.out.println(ligne);
+					i = i - ligne.length() - 1;
+				}
+		    	
+		        myWriter.close();
+		        
+		        
+	        	// Send the headers
+	            out.println("HTTP/1.0 202 ACCEPTED"); 
+	            out.println("Server: Bot");
+	            out.println("File-location: "+ path);
+		        
+		        
+			} catch (IOException e) {
+				e.printStackTrace();
+				
+	            out.println("HTTP/1.0 403 FORBIDDEN"); 
+	            out.println("Server: Bot");
+			}
+			
+			
+			
+			
+			
+			out.flush();
+			
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
   	}
   	
   }
