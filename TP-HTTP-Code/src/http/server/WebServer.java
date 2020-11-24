@@ -100,13 +100,13 @@ public class WebServer {
 	        	out.println("Delete method");
 		        responseDelete(path, socketOutputStream);
 	        }
-//	        else if(str.startsWith("PUT")) {
-//	        	String[] tmp = str.split(" ");
-//	        	String requete = tmp[0];
-//	        	String path = tmp[1];
-//	        	out.println("Put method");
-//		        responsePut(path, socketOutputStream, in);
-//	        }
+	        else if(str.startsWith("PUT")) {
+	        	String[] tmp = str.split(" ");
+	        	String requete = tmp[0];
+	        	String path = tmp[1];
+	        	out.println("Put method");
+		        responsePut(path, socketOutputStream, in);
+	        }
 	        else if (str.startsWith("POST")) {
 	        	String[] tmp = str.split(" ");
 	        	String requete = tmp[0];
@@ -125,11 +125,7 @@ public class WebServer {
 
   
   
-  
-
-
-
-/**
+  /**
    * Start the application.
    * 
    * @param args
@@ -146,38 +142,58 @@ public class WebServer {
   		PrintWriter out = new PrintWriter(socketOutputStream);
     	File file = new File(path.substring(1));
     	
+    	
+    	
     	// Send the headers
-
-        FileReader fr;
-		try {
-			fr = new FileReader(file);
-			BufferedReader reader = new BufferedReader(fr);
-	    	String ligne;
-	        
-
-	        out.println("HTTP/1.0 200 OK");
-	    	out.println("Server: Bot");
-
-	        
-	    	while(true) {
-	    		ligne = reader.readLine();
-	    		if(ligne == null) {
-	    			break;
-	    		}
-	    		out.write(ligne);
-	    		out.write("\n");
-	    	}
-	    	
-	    	
-
-	        reader.close();
-	        out.flush();
-		} catch (IOException e) {
-			
-	        out.println("HTTP/1.0 404 NOT FOUND"); // à modifier (on renvoie le code 200 (succès) que la ressource existe ou pas ..)
-	        out.println("Content-Type: text/html"); // a modifier (au pire on supprime mais si la ressource n'est ni du texte ni du html ...)
+    	if(!file.exists()) {
+	        out.println("HTTP/1.0 404 NOT FOUND"); 
 	        out.println("Server: Bot");
-			e.printStackTrace();
+    	}
+    	else if(!file.canRead()) {
+	        out.println("HTTP/1.0 403 PERMISSION DENIED"); 
+	        out.println("Server: Bot");
+    	}
+    	else {
+    		
+    		if(path.endsWith(".py")) {
+    			System.out.println("execution en cours");
+    		}else {
+
+			try {
+				
+				int longueur = (int) file.length();
+		        out.println("HTTP/1.0 200 OK");
+		        out.println("Content-Length: " +longueur);
+		    	out.println("Server: Bot");
+		    	out.println("");
+		    	
+		    	out.flush();
+		    	
+		    	byte[] tableauDeByte = new byte[longueur] ;
+		    	
+
+		        FileInputStream fis = null;
+		        
+		        try {
+
+		            fis = new FileInputStream(file);
+
+		            //read file into bytes[]
+		            fis.read(tableauDeByte);
+
+		        } finally {
+		            if (fis != null) {
+		                fis.close();
+		            }
+		        }
+		    	socketOutputStream.write(tableauDeByte);
+		        
+			} catch (IOException e) {
+				
+	
+				e.printStackTrace();
+			}
+    		}
 		}
     	
   	}
@@ -231,36 +247,42 @@ public class WebServer {
     	out.flush();
   	}
   	
-  	public void responsePut(String path, OutputStream socketOutputStream, BufferedReader in) {
+ 	public void responsePut(String path, OutputStream socketOutputStream, BufferedReader in) {
   		path = "/"+System.getProperty("user.dir")+"/src/ressources"+ path;
   		PrintWriter out = new PrintWriter(socketOutputStream);
     	File file = new File(path.substring(1));
     	
-    	String line = new String("");
-    	while (!line.contains("Content-length")) {
+    	String line = new String(":");
+    	int tailleCorps = 0;
+    	while (line.contains(":")) {
     		try {
 				line = in.readLine();
 				System.out.println("header: " + line);
+				if(line.contains("Content-length")) {
+					String[] ligneTailleRequete = line.split(": ");
+					tailleCorps = Integer.parseInt(ligneTailleRequete[1]);
+				}
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
     	}
     	
-		String[] ligneTailleRequete = line.split(": ");
-		int tailleRequete = Integer.parseInt(ligneTailleRequete[1]);
-		System.out.println(tailleRequete);
+
+		System.out.println("taille corps : " + tailleCorps);
     	ArrayList<String> Contenu = new ArrayList<String>();
     	Integer compteurTaille = 0;
-    	while(compteurTaille < tailleRequete) {
+    	
+    	while(compteurTaille < tailleCorps) {
     		try {
     			String ligneContenu = in.readLine();
     			Contenu.add(ligneContenu);
     			System.out.println("contenu: " +ligneContenu);
-    			compteurTaille += ligneContenu.length();
+    			compteurTaille += ligneContenu.length()+1;
 			} catch (IOException e) {
 				e.printStackTrace();
 				break;
 			}
+    		System.out.println("taille restante à lire: " + compteurTaille);
     		
     	}
         
@@ -269,9 +291,10 @@ public class WebServer {
 			
 			myWriter = new FileWriter(path);
 	    	for(String ligne : Contenu) {
-	    		
-	            myWriter.write(ligne);
+	    		System.out.println("contenu écrit: "+ligne);
+	            myWriter.write(ligne + "\n");
 	    	}
+	    	myWriter.flush();
 	        myWriter.close();
 	        
 	        
