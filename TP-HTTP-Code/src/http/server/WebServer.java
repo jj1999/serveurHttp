@@ -23,13 +23,7 @@ import java.util.ArrayList;
 
 
 /**
- * Example program from Chapter 1 Programming Spiders, Bots and Aggregators in
- * Java Copyright 2001 by Jeff Heaton
- * 
- * WebServer is a very simple web-server. Any request is responded with a very
- * simple web-page.
- * 
- * @author Jeff Heaton
+ * @author Jean-Jacques MELDRUM & Romain FONCK 
  * @version 1.0
  */
 public class WebServer {
@@ -135,7 +129,11 @@ public class WebServer {
   		WebServer ws = new WebServer();
   		ws.start();
   	}
-  
+  /**
+   * gestionnaire des requêtes GET 
+   * @param path
+   * @param socketOutputStream
+   */
   	public void responseGet(String path, OutputStream socketOutputStream) {
   		
   		path = "/"+System.getProperty("user.dir")+"/src/ressources"+ path;
@@ -197,7 +195,11 @@ public class WebServer {
 		}
     	
   	}
-  	
+  	/**
+  	 * Gestionnaire des requêtes HEAD
+  	 * @param path
+  	 * @param socketOutputStream
+  	 */
   	public void responseHead(String path, OutputStream socketOutputStream) {
   		path = "/"+System.getProperty("user.dir")+"/src/ressources"+ path;
   		PrintWriter out = new PrintWriter(socketOutputStream);
@@ -246,7 +248,12 @@ public class WebServer {
     	}   
     	out.flush();
   	}
-  	
+  	/**
+  	 * Gestionnaire des requêtes PUT
+  	 * @param path
+  	 * @param socketOutputStream
+  	 * @param in
+  	 */
  	public void responsePut(String path, OutputStream socketOutputStream, BufferedReader in) {
   		path = "/"+System.getProperty("user.dir")+"/src/ressources"+ path;
   		PrintWriter out = new PrintWriter(socketOutputStream);
@@ -318,7 +325,12 @@ public class WebServer {
 
         
   	}
-  	
+  	/**
+  	 * Gestionnaire des requêtes POST
+  	 * @param path
+  	 * @param socketOutputStream
+  	 * @param in
+  	 */
   	public void responsePost(String path, OutputStream socketOutputStream, BufferedReader in) {
   		
   		path = "/"+System.getProperty("user.dir")+"/src/ressources"+ path;
