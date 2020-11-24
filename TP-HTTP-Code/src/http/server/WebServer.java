@@ -142,37 +142,46 @@ public class WebServer {
     	File file = new File(path.substring(1));
     	
     	// Send the headers
-
-        FileReader fr;
-		try {
-			fr = new FileReader(file);
-			BufferedReader reader = new BufferedReader(fr);
-	    	String ligne;
-	        
-
-	        out.println("HTTP/1.0 200 OK");
-	    	out.println("Server: Bot");
-
-	        
-	    	while(true) {
-	    		ligne = reader.readLine();
-	    		if(ligne == null) {
-	    			break;
-	    		}
-	    		out.write(ligne);
-	    		out.write("\n");
-	    	}
-	    	
-
-
-	        reader.close();
-	        out.flush();
-		} catch (IOException e) {
-			
-	        out.println("HTTP/1.0 404 NOT FOUND"); // à modifier (on renvoie le code 200 (succès) que la ressource existe ou pas ..)
-	        out.println("Content-Type: text/html"); // a modifier (au pire on supprime mais si la ressource n'est ni du texte ni du html ...)
+    	if(!file.exists()) {
+	        out.println("HTTP/1.0 404 NOT FOUND"); 
 	        out.println("Server: Bot");
-			e.printStackTrace();
+    	}
+    	else {
+			try {
+
+				int longueur = (int) file.length();
+		        out.println("HTTP/1.0 200 OK");
+		        //out.println("Content-Type: image/png");
+		        out.println("Content-Length: " +longueur);
+		    	out.println("Server: Bot");
+		    	out.println("");
+		    	
+		    	out.flush();
+		    	
+		    	byte[] tableauDeByte = new byte[longueur] ;
+		    	
+
+		        FileInputStream fis = null;
+		        
+		        try {
+
+		            fis = new FileInputStream(file);
+
+		            //read file into bytes[]
+		            fis.read(tableauDeByte);
+
+		        } finally {
+		            if (fis != null) {
+		                fis.close();
+		            }
+		        }
+		    	socketOutputStream.write(tableauDeByte);
+		        
+			} catch (IOException e) {
+				
+	
+				e.printStackTrace();
+			}
 		}
     	
   	}
