@@ -2,6 +2,7 @@
 
 package http.server;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -296,13 +297,15 @@ public class WebServer {
   	}
   	
   	public void responsePost(String path, OutputStream socketOutputStream, BufferedReader in) {
-  		path = "/"+System.getProperty("user.dir")+"/../../ressources"+ path;
+  		
+  		path = "/"+System.getProperty("user.dir")+"/src/ressources"+ path;
   		PrintStream out = new PrintStream(socketOutputStream);
+  		File file = new File(path.substring(1));
   		
   		try {
 			
 			String ligne = "pain";
-			int viennoise = 0;
+			int tailleCorps = 0;
 			
 			while(ligne != null) {
 				
@@ -311,48 +314,47 @@ public class WebServer {
 	    		
 	    		if(ligne.contains("Content-Length")) {
 	    			String[] ligneTailleRequete = ligne.split(": ");
-	    			viennoise = Integer.parseInt(ligneTailleRequete[1]);
-	    		}else if (!ligne.contains(": ") && viennoise!=0) {
+	    			tailleCorps = Integer.parseInt(ligneTailleRequete[1]);
+	    		}else if (!ligne.contains(": ") && tailleCorps!=0) {
 	    			System.out.println("arret");
 	    			break;
 	    		}
 	    		
 	    	}
-			int i = viennoise;
 			
-			
+			int longueurRestante = tailleCorps;
 			FileWriter myWriter;
+			
 			try {
-				
-				myWriter = new FileWriter(path);
-				while( i>0 ) {
-					
-					System.out.println(i);
-					ligne = in.readLine();
-					myWriter.write(ligne);
-					System.out.println(ligne);
-					i = i - ligne.length() - 1;
-				}
-		    	
-		        myWriter.close();
+				if(!file.exists()) {
+		  			System.out.println("File-location: doesn't exists");
+		  			out.println("File-location: doesn't exists");
+		  		} else {
+		  			
+		  			myWriter = new FileWriter(path, true);
+		  			BufferedWriter bw = new BufferedWriter(myWriter);
+		  			
+		  			while( longueurRestante>0 ) {
+						System.out.println(ligne);
+						ligne = in.readLine();
+					    bw.write(ligne);
+					    bw.newLine();
+					    longueurRestante = longueurRestante - ligne.length() - 1;
+		  			}
+		  			bw.close();
+		  			myWriter.close();
 		        
-		        
-	        	// Send the headers
-	            out.println("HTTP/1.0 202 ACCEPTED"); 
-	            out.println("Server: Bot");
-	            out.println("File-location: "+ path);
-		        
-		        
+		        	// Send the headers
+		            out.println("HTTP/1.0 202 ACCEPTED"); 
+		            out.println("Server: Bot");
+		            out.println("File-location: "+ path);
+		  		}
 			} catch (IOException e) {
 				e.printStackTrace();
 				
 	            out.println("HTTP/1.0 403 FORBIDDEN"); 
 	            out.println("Server: Bot");
 			}
-			
-			
-			
-			
 			
 			out.flush();
 			
