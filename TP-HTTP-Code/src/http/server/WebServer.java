@@ -28,17 +28,48 @@ import java.util.ArrayList;
  */
 public class WebServer {
 
+	/**
+	 * Méthode vérifiant qu'un string contient bien un nombre
+	 * @param strNum
+	 * @return
+	 */
+	public static boolean isNumeric(String strNum) {
+	    if (strNum == null) {
+	        return false;
+	    }
+	    try {
+	        double d = Double.parseDouble(strNum);
+	    } catch (NumberFormatException nfe) {
+	        return false;
+	    }
+	    return true;
+	}
+	
   /**
    * WebServer constructor.
    */
   protected void start() {
     ServerSocket s;
+    String port = "a";
+    BufferedReader systemIn = new BufferedReader(new InputStreamReader(System.in));
+    
+    while(!isNumeric(port)) {
+    	System.out.println("Sur quel port voulez-vous que le serveur écoute ? (entrez un nombre suppérieur à 1024 svp)");
+    	try {
+			port = systemIn.readLine();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    }
+    int numPort = Integer.parseInt(port);
 
-    System.out.println("Webserver starting up on port 80");
+    
+    System.out.println("Webserver starting up on port "+ numPort);
     System.out.println("(press ctrl-c to exit)");
     try {
       // create the main server socket
-      s = new ServerSocket(3000);
+      s = new ServerSocket(numPort);
     } catch (Exception e) {
       System.out.println("Error: " + e);
       return;
