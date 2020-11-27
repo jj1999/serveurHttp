@@ -23,15 +23,15 @@ import java.util.ArrayList;
 
 
 /**
- * @author Jean-Jacques MELDRUM & Romain FONCK 
+ * @author JeanJacques and MELDRUM Romain FONCK 
  * @version 1.0
  */
 public class WebServer {
 
 	/**
-	 * Méthode vérifiant qu'un string contient bien un nombre
-	 * @param strNum
-	 * @return
+	 * This method verifies if strNum is a number
+	 * @param strNum string
+	 * @return boolean
 	 */
 	public static boolean isNumeric(String strNum) {
 	    if (strNum == null) {
@@ -46,15 +46,17 @@ public class WebServer {
 	}
 	
   /**
-   * WebServer constructor.
+   * WebServer starting method. Selects the right methods depending on the request sent
    */
   protected void start() {
     ServerSocket s;
     String port = "a";
+   
     BufferedReader systemIn = new BufferedReader(new InputStreamReader(System.in));
     
     while(!isNumeric(port)) {
     	System.out.println("Sur quel port voulez-vous que le serveur écoute ? (entrez un nombre suppérieur à 1024 svp)");
+    	
     	try {
 			port = systemIn.readLine();
 		} catch (IOException e) {
@@ -67,6 +69,7 @@ public class WebServer {
     
     System.out.println("Webserver starting up on port "+ numPort);
     System.out.println("(press ctrl-c to exit)");
+ 
     try {
       // create the main server socket
       s = new ServerSocket(numPort);
@@ -98,11 +101,8 @@ public class WebServer {
         
         while (str != null && !str.equals("")) {
         	
-        	
         	str = in.readLine();
         	System.out.println("donnees recues" + str);
-        	
-
         	
 	        if (str.startsWith("GET")) {
 	        	String[] tmp = str.split(" ");
@@ -161,12 +161,11 @@ public class WebServer {
   		ws.start();
   	}
   /**
-   * gestionnaire des requêtes GET 
-   * @param path
-   * @param socketOutputStream
+   * Gets the request file and sends it to the output stream if the file exists and the permission is not denied 
+   * @param path path of the file
+   * @param socketOutputStream output stream socket
    */
   	public void responseGet(String path, OutputStream socketOutputStream) {
-  		
   		path = "/"+System.getProperty("user.dir")+"/src/ressources"+ path;
   		PrintWriter out = new PrintWriter(socketOutputStream);
     	File file = new File(path.substring(1));
@@ -207,7 +206,9 @@ public class WebServer {
 
 		            fis = new FileInputStream(file);
 
-		            //read file into bytes[]
+		            /**
+		             * read file input stream into bytes
+		             */
 		            fis.read(tableauDeByte);
 
 		        } finally {
@@ -215,6 +216,9 @@ public class WebServer {
 		                fis.close();
 		            }
 		        }
+		        /**
+		         * send the data to the socketOuputStream 
+		         */
 		    	socketOutputStream.write(tableauDeByte);
 		        
 			} catch (IOException e) {
@@ -227,9 +231,9 @@ public class WebServer {
     	
   	}
   	/**
-  	 * Gestionnaire des requêtes HEAD
-  	 * @param path
-  	 * @param socketOutputStream
+  	 * Head method sends the right headers to the client if the file requested exists or not
+  	 * @param path path of the file
+  	 * @param socketOutputStream output stream socket
   	 */
   	public void responseHead(String path, OutputStream socketOutputStream) {
   		path = "/"+System.getProperty("user.dir")+"/src/ressources"+ path;
@@ -255,10 +259,16 @@ public class WebServer {
     	
   	}
   	
+  	/**
+  	 * Delete method deletes the requested file if it has autorisation and the file exists
+  	 * @param path path of the file
+  	 * @param socketOutputStream output stream socket
+  	 */
   	public void responseDelete(String path, OutputStream socketOutputStream) {
   		path = "/"+System.getProperty("user.dir")+"/src/ressources"+ path;
   		PrintWriter out = new PrintWriter(socketOutputStream);
     	File file = new File(path.substring(1));
+    	
     	if(!file.exists() && file.canWrite()) {
         	// Send the headers
             out.println("HTTP/1.0 404 NOT FOUND "); 
@@ -280,10 +290,10 @@ public class WebServer {
     	out.flush();
   	}
   	/**
-  	 * Gestionnaire des requêtes PUT
-  	 * @param path
-  	 * @param socketOutputStream
-  	 * @param in
+  	 * The put method reads the head and the body of request and writes it into the selected file, if the file existed it will be overwritten 
+  	 * @param path path of the file
+  	 * @param socketOutputStream output stream socket
+  	 * @param in Input stream to read the body of the request
   	 */
  	public void responsePut(String path, OutputStream socketOutputStream, BufferedReader in) {
   		path = "/"+System.getProperty("user.dir")+"/src/ressources"+ path;
@@ -294,8 +304,10 @@ public class WebServer {
     	int tailleCorps = 0;
     	while (line.contains(":")) {
     		try {
+    	
 				line = in.readLine();
 				System.out.println("header: " + line);
+				
 				if(line.contains("Content-length")) {
 					String[] ligneTailleRequete = line.split(": ");
 					tailleCorps = Integer.parseInt(ligneTailleRequete[1]);
@@ -309,9 +321,10 @@ public class WebServer {
 		System.out.println("taille corps : " + tailleCorps);
     	ArrayList<String> Contenu = new ArrayList<String>();
     	Integer compteurTaille = 0;
-    	
+
     	while(compteurTaille < tailleCorps) {
     		try {
+    			
     			String ligneContenu = in.readLine();
     			Contenu.add(ligneContenu);
     			System.out.println("contenu: " +ligneContenu);
@@ -357,10 +370,10 @@ public class WebServer {
         
   	}
   	/**
-  	 * Gestionnaire des requêtes POST
-  	 * @param path
-  	 * @param socketOutputStream
-  	 * @param in
+  	 * The Post method append the body of the request to the file existing, if the file does not exist it sends an error code
+  	 * @param path path of the file
+  	 * @param socketOutputStream output stream socket
+  	 * @param in Input stream to read the body of the request
   	 */
   	public void responsePost(String path, OutputStream socketOutputStream, BufferedReader in) {
   		
